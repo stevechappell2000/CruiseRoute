@@ -1,0 +1,7 @@
+com\cruise\CruiseRoute\util\CruiseNode.class
+com\cruise\CruiseRoute\util\PluginNames.class
+com\cruise\CruiseRoute\util\ServerHash.class
+com\cruise\CruiseRoute\util\CruiseNodeList.class
+com\cruise\plugins\CruiseRoute\CruiseRouter.class
+com\cruise\plugins\CruiseRoute\App.class
+com\cruise\CruiseRoute\util\Plugin.class
