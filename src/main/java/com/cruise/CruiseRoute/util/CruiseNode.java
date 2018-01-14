@@ -10,8 +10,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import javax.net.ssl.HttpsURLConnection;
-import com.corecruise.cruise.SessionObject;
-import com.cruise.CruiseRoute.util.*;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class CruiseNode {
 	String name = null;
@@ -23,6 +23,8 @@ public class CruiseNode {
 	String SupportedPlugins = "unknown";
 	Integer serverCount = 0;
 	String[] pmda;
+	long hitCount = 0;
+	long successCount = 0;
 	ArrayList<String> plugins = new ArrayList<String>();
 	String getInfo = 
 			"{"+
@@ -50,7 +52,7 @@ public class CruiseNode {
 	public CruiseNode() {
 
 	}
-	
+	@JsonIgnore
 	public String[] getPmda() {
 		return pmda;
 	}
@@ -83,7 +85,7 @@ public class CruiseNode {
 	public void setUser(String user) {
 		this.user = user;
 	}
-
+	@JsonIgnore
 	public String getPass() {
 		return pass;
 	}
@@ -128,7 +130,7 @@ public class CruiseNode {
 	public void setPlugins(ArrayList<String> plugins) {
 		this.plugins = plugins;
 	}
-	public String init(SessionObject so) throws MalformedURLException, IOException{
+	public String init() throws MalformedURLException, IOException{
 		String ret = null;
 		ret = sendRequest(getInfo);
 		return ret;
@@ -151,7 +153,7 @@ public class CruiseNode {
 		if(null == server || null == port) {
 
 		}else {
-
+            ++hitCount;
 			int status = 0;
 			BufferedReader in = null;
 			DataOutputStream out = null;
@@ -159,11 +161,8 @@ public class CruiseNode {
 			if(server.trim().toLowerCase().startsWith("http:")) {
 				URL url = new URL(server+":"+port+"/Cruise");
 				HttpURLConnection con = (HttpURLConnection) url.openConnection();
-
 				con.setRequestMethod("POST");
 				con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
-
-
 				con.setRequestProperty("Content-Type", "application/json");
 				con.setConnectTimeout(5000);
 				con.setReadTimeout(5000);
@@ -186,12 +185,11 @@ public class CruiseNode {
 			}else if(server.trim().toLowerCase().startsWith("https:")) {
 				URL url = new URL(server+":"+port+"/Cruise");
 				HttpsURLConnection con = (HttpsURLConnection) url.openConnection();
+				con.setRequestMethod("POST");
+				con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
 				con.setRequestProperty("Content-Type", "application/json");
 				con.setConnectTimeout(5000);
 				con.setReadTimeout(5000);
-
-				con.setRequestMethod("POST");
-				con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
 
 				con.setDoOutput(true);
 				out = new DataOutputStream(con.getOutputStream());
@@ -209,8 +207,27 @@ public class CruiseNode {
 				in.close();
 				con.disconnect();
 			}
+			if(status > 306) {
+				this.setEnabled(false);
+			}else {
+				++successCount;
+				this.setEnabled(true);
+			}
+			
 		}
 		return content.toString();
+	}
+	public long getHitCount() {
+		return hitCount;
+	}
+	public void setHitCount(long hitCount) {
+		this.hitCount = hitCount;
+	}
+	public long getSuccessCount() {
+		return successCount;
+	}
+	public void setSuccessCount(long successCount) {
+		this.successCount = successCount;
 	}
 
 

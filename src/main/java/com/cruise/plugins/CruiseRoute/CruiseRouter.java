@@ -11,6 +11,7 @@ import com.corecruise.cruise.logging.Clog;
 import com.corecruise.cruise.services.interfaces.PluginInterface;
 import com.corecruise.cruise.services.utils.GenericSessionResp;
 import com.corecruise.cruise.services.utils.Services;
+import com.cruise.CruiseRoute.util.CruiseConnRecover;
 import com.cruise.CruiseRoute.util.CruiseNode;
 import com.cruise.CruiseRoute.util.CruiseNodeList;
 import com.cruise.CruiseRoute.util.Plugin;
@@ -29,7 +30,7 @@ public class CruiseRouter implements PluginInterface{
 
 	PlugInMetaData pmd = null;
 	String QUEUE_NAME = null;
-
+	CruiseConnRecover connRecover = null;
 	public CruiseRouter() {
 		//config = new CruiseProducerConfig();
 		//config.initConfig();
@@ -83,7 +84,7 @@ public class CruiseRouter implements PluginInterface{
 			String sPort = service.Parameter("serverPort");
 			CruiseNode cn = new CruiseNode(server, sURL, sPort);
 			try {
-				String plugInFo = cn.init(so);
+				String plugInFo = cn.init();
 				if(null == plugInFo) {
 					cn.setEnabled(false);
 				}else {
@@ -100,6 +101,10 @@ public class CruiseRouter implements PluginInterface{
 					gro.addParmeter("Server Loaded", server+":"+sURL);
 					so.appendToResponse("addServer:"+server,gro);
 					ret = true;
+				}
+				if(null == connRecover) {
+					connRecover = new CruiseConnRecover();
+					connRecover.init();
 				}
 			} catch (JsonParseException e) {
 				// TODO Auto-generated catch block

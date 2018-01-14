@@ -25,6 +25,23 @@ public class CruiseNodeList {
 		servers.add(plugins);
 		servers.sort(null);
 	}
+	
+	public static HashMap<String, ServerHash> getNodeList() {
+		return nodeList;
+	}
+
+	public static void setNodeList(HashMap<String, ServerHash> nodeList) {
+		CruiseNodeList.nodeList = nodeList;
+	}
+
+	public static ArrayList<String> getServers() {
+		return servers;
+	}
+
+	public static void setServers(ArrayList<String> servers) {
+		CruiseNodeList.servers = servers;
+	}
+
 	public static CruiseNode getCruiseNode(String pluginsRequested) {
 		CruiseNode cn = null;
 		ServerHash holdList = null;
@@ -106,7 +123,7 @@ public class CruiseNodeList {
 	             */
 				retryCount = cn.getServerCount();
 				
-				sessionObject.getApplication().Parameter("byPass", "");
+				sessionObject.getApplication().Parameter("route", "");
 				try {
 					String tmp =  cn.sendRequest("{ \"Application\":"+sessionObject.getCruiseMapper().writeValueAsString(sessionObject.getApplication())+"}");
 					ObjectMapper mapper = new ObjectMapper();
@@ -117,18 +134,19 @@ public class CruiseNodeList {
 					retry = retryCount;
 				} catch (MalformedURLException e) {
 					sessionObject.appendToResponse("CruiseRoute","("+retry+" of "+retryCount+" Attempts) Failed to call sever 100:"+cn.getServer()+":"+cn.getPort()+": "+e.getMessage());
-					e.printStackTrace();
+					//e.printStackTrace();
 					cn.setEnabled(false);
 				} catch (JsonProcessingException e) {
 					sessionObject.appendToResponse("CruiseRoute","("+retry+" of "+retryCount+" Attempts) JSON Failed to call sever: 200"+cn.getServer()+":"+cn.getPort()+": "+e.getMessage());
-					e.printStackTrace();
+					//e.printStackTrace();
 				} catch(Exception e) {
 					sessionObject.appendToResponse("CruiseRoute","("+retry+" of "+retryCount+" Attempts) Unknown Failure to call sever: 300"+cn.getServer()+":"+cn.getPort()+": "+e.getMessage());
-					e.printStackTrace();
+					//e.printStackTrace();
+					cn.setEnabled(false);
 				}
 				++retry;
 			}else {
-				sessionObject.getApplication().Parameter("byPass", "");
+				sessionObject.getApplication().Parameter("route", "");
 				ok = true;
 				retry = retryCount;
 			}

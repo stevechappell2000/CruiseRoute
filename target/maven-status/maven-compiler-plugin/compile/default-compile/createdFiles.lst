@@ -5,3 +5,4 @@ com\cruise\CruiseRoute\util\CruiseNodeList.class
 com\cruise\plugins\CruiseRoute\CruiseRouter.class
 com\cruise\plugins\CruiseRoute\App.class
 com\cruise\CruiseRoute\util\Plugin.class
+com\cruise\CruiseRoute\util\CruiseConnRecover.class
