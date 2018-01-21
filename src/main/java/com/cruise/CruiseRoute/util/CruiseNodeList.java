@@ -67,6 +67,7 @@ public class CruiseNodeList {
 					cn.setServerCount(len);
 					break;
 				}
+				cn = null;
 			}
 		}
 		if(null == cn || cn.isEnabled() == false) {
@@ -88,6 +89,7 @@ public class CruiseNodeList {
 							cn.setServerCount(len);
 							break;
 						}
+						cn = null;
 					}
 				}
 			}
@@ -111,11 +113,12 @@ public class CruiseNodeList {
 	}
 	public static void executeRemote(SessionObject sessionObject) {
 		ArrayList<Services> al = sessionObject.getApplication().getServices();
-		String[] array = new String[al.size()];
+		String[] array = new String[al.size()+1];
 		int i=0;
 		for(Services pmd: al) { 
 		    array[i++] = pmd.PluginName();
 		}
+		array[i] = "CruiseCorePlugin";
 		array = Arrays.stream(array).distinct().toArray(String[]::new);
 		Arrays.sort(array);
 		String requested = String.join(":", array);
@@ -129,7 +132,7 @@ public class CruiseNodeList {
 	             * retry is a problem here, if the server is disable we are still including it in the count. 
 	             * So this is a bug that needs to be address - S.Chappell
 	             */
-				retryCount = cn.getServerCount();
+				//retryCount = cn.getServerCount();
 				
 				sessionObject.getApplication().Parameter("route", "");
 				try {
@@ -152,6 +155,9 @@ public class CruiseNodeList {
 					sessionObject.appendToResponse("CruiseRoute","("+retry+" of "+retryCount+" Attempts) Unknown Failure to call sever: 300"+cn.getServer()+":"+cn.getPort()+": "+e.getMessage());
 					//e.printStackTrace();
 					cn.setEnabled(false);
+				}
+				if(!ok) {
+					cn = null;
 				}
 				++retry;
 			}else {
