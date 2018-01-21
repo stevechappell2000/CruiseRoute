@@ -24,8 +24,10 @@ public class CruiseNode {
 	Integer serverCount = 0;
 	String[] pmda;
 	long hitCount = 0;
-	long successCount = 0;
+	//long successCount = 0;
+	long failures = 0;
 	ArrayList<String> plugins = new ArrayList<String>();
+	long[] usage;
 	String getInfo = 
 			"{"+
 					"\"Application\" : {"+
@@ -56,7 +58,16 @@ public class CruiseNode {
 	public String[] getPmda() {
 		return pmda;
 	}
-
+    public void updateUsage(String[] servicesCalled) {
+    	try {
+    		for(String key: servicesCalled) {
+    			++usage[plugins.indexOf(key)];
+    		}
+    		++hitCount;
+    	}catch(Exception e) {
+    		e.printStackTrace();
+    	}
+    }
 	public void setPmda(PluginNames pin) {
 		//Set<String> hnames = new HashSet<String>();
 		//for(PlugInMetaData pmd: pmda.getPlugins()) {
@@ -65,10 +76,14 @@ public class CruiseNode {
 		//String[] array = hnames.toArray(new String[0]);
 		
 		pmda = new String[pin.getPlugins().size()];
+		usage = new long[pmda.length];
 		//String[] array = pmda.getPlugins().getPlugins();//new String[pmda.getPlugins().size()];
 		int i=0;
         for(Plugin p: pin.getPlugins()){
-            pmda[i++] = p.getPlugin();
+            pmda[i] = p.getPlugin();
+            plugins.add(p.getPlugin());
+            usage[i] = 0;
+            ++i;
         }
 		Arrays.sort(pmda);
 		SupportedPlugins = String.join(":", pmda);
@@ -124,8 +139,17 @@ public class CruiseNode {
 	public void setPort(String port) {
 		this.port = port;
 	}
+	@JsonIgnore
 	public ArrayList<String> getPlugins() {
 		return plugins;
+	}
+	public ArrayList<plugInUsage> getPluginInfo(){
+		ArrayList<plugInUsage> pi = new ArrayList<plugInUsage>();
+		int x = pmda.length;
+		for(int i=0;i<x;i++) {
+			pi.add(new plugInUsage(pmda[i],usage[i]));
+		}
+		return pi;
 	}
 	public void setPlugins(ArrayList<String> plugins) {
 		this.plugins = plugins;
@@ -143,7 +167,7 @@ public class CruiseNode {
 	public void setServerCount(Integer serverCount) {
 		this.serverCount = serverCount;
 	}
-
+    @JsonIgnore
 	public void setSupportedPlugins(String supportedPlugins) {
 		SupportedPlugins = supportedPlugins;
 	}
@@ -153,7 +177,7 @@ public class CruiseNode {
 		if(null == server || null == port) {
 
 		}else {
-            ++hitCount;
+
 			int status = 0;
 			BufferedReader in = null;
 			DataOutputStream out = null;
@@ -210,7 +234,7 @@ public class CruiseNode {
 			if(status > 306) {
 				this.setEnabled(false);
 			}else {
-				++successCount;
+				//++successCount;
 				this.setEnabled(true);
 			}
 			
@@ -223,12 +247,32 @@ public class CruiseNode {
 	public void setHitCount(long hitCount) {
 		this.hitCount = hitCount;
 	}
-	public long getSuccessCount() {
-		return successCount;
+	public long getFailures() {
+		return failures;
 	}
-	public void setSuccessCount(long successCount) {
-		this.successCount = successCount;
+	public void setFailures(long failedConnections) {
+		this.failures = failedConnections;
 	}
 
-
+    class plugInUsage{
+    	String Plugin;
+    	long Usage;
+    	public plugInUsage(String pluginName, long usageCount) {
+    		Plugin = pluginName;
+    		Usage = usageCount;
+    	}
+		public String getPlugin() {
+			return Plugin;
+		}
+		public void setPlugin(String plugin) {
+			Plugin = plugin;
+		}
+		public long getUsage() {
+			return Usage;
+		}
+		public void setUsage(long usage) {
+			Usage = usage;
+		}
+    	
+    }
 }

@@ -2,7 +2,10 @@ package com.cruise.CruiseRoute.util;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class ServerHash {
 	HashMap<String,CruiseNode> servers = new HashMap<String,CruiseNode>();
@@ -19,6 +22,15 @@ public class ServerHash {
 			serverNames.add(name);
 		}
 	}
+	public boolean removeNode(CruiseNode node) {
+		boolean ret = false;
+		if(servers.containsKey(node.getName())) {
+			servers.remove(node.getName());
+			serverNames.remove(node.getName());
+		    ret = true;
+		}
+		return ret;
+	}
 	public HashMap<String, CruiseNode> getServers() {
 		return servers;
 	}
@@ -31,6 +43,16 @@ public class ServerHash {
 	public void setInd(AtomicInteger ind) {
 		ServerHash.ind = ind;
 	}
+	@JsonIgnore
+	public ArrayList<CruiseNode> getServersArray(){
+		ArrayList<CruiseNode> al = new ArrayList<CruiseNode>();
+		Set<String> keys = servers.keySet();
+		for(String key: keys) {
+			al.add(servers.get(key));
+		}
+		return al;
+	}
+	@JsonIgnore
 	public CruiseNode getNextServer() {
 	   String name = serverNames.get(ind.getAndAccumulate(serverNames.size(), (cur, n)->cur >= n-1 ? 0 : cur+1));
 	   return servers.get(name);

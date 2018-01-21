@@ -1,14 +1,9 @@
 package com.cruise.CruiseRoute.util;
-
-import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
-
-import com.corecruise.cruise.logging.Clog;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class CruiseConnRecover extends TimerTask {
 	TimerTask timerTask = null;
@@ -34,14 +29,35 @@ public class CruiseConnRecover extends TimerTask {
     					if(!cn.isEnabled()) {
     						System.out.println("trying to restart "+cn.getName());
     						try {
-    							cn.init();
+    							String plugInFo = cn.init();
+    							
+    							ObjectMapper mapper = new ObjectMapper();
+    							PluginNames pin = mapper.readValue(plugInFo, PluginNames.class);
+
+    							for(Plugin p: pin.getPlugins()){
+    								System.out.println(p.getPlugin());
+    							}
+    							cn.setPmda(pin);
+    							cn.setEnabled(true);
+    							System.out.println("Connection recovered for "+cn.getName());
+    							
     						} catch (Exception e) {
+    							if(cn.getFailures()>1) {
+    								if(holdList.removeNode(cn)) {
+    									System.out.println("ERROR: Connection Recover failed. Removing Server after ("+cn.getFailures()+") attempts. "+cn.getName()+":"+cn.getServer()+":"+cn.getPort());
+    								}else {
+       									System.out.println("ERROR: Connection Recover failed. REMOVING SERVER FAILED after ("+cn.getFailures()+") attempts. "+cn.getName()+":"+cn.getServer()+":"+cn.getPort());
+    								}
+    							}else {
+    								cn.setFailures(cn.getFailures()+1);
+    								System.out.println("ERROR: Connection Recover failed for server ("+cn.getFailures()+") "+cn.getName()+":"+cn.getServer()+":"+cn.getPort());
+    							}
     							// TODO Auto-generated catch block
     							//e.printStackTrace();
     							//Clog.ErrorLog("Error", "999990", "Attempted to resestablish Connection to "+cn.name, e);
-    							System.out.println("ERROR: Connection Recover failed for server "+cn.getName()+":"+cn.getServer()+":"+cn.getPort());
+    							
     						} 
-    						break;
+    						//break;
     					}
     				}
 

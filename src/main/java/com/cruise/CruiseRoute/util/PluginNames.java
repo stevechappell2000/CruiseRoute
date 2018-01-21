@@ -2,9 +2,6 @@ package com.cruise.CruiseRoute.util;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonRootName;
 //JsonRootName("Plugins")
 public class PluginNames {
 	
@@ -27,6 +24,6 @@ public class PluginNames {
 	public void setRuntime(String runtime) {
 		Runtime = runtime;
 	}
-
+    //public 
 
 }

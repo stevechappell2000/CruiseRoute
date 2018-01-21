@@ -2,10 +2,6 @@ package com.cruise.plugins.CruiseRoute;
 
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-
 import com.corecruise.cruise.SessionObject;
 import com.corecruise.cruise.logging.Clog;
 import com.corecruise.cruise.services.interfaces.PluginInterface;
@@ -51,7 +47,14 @@ public class CruiseRouter implements PluginInterface{
 		pmd.getActions().get(x).getActionParams().add(new ActionParameter("serverURL","true","http://localhost","URL of CruiseServer"));
 		pmd.getActions().get(x).getActionParams().add(new ActionParameter("serverPort","true","8080","Port for server instances"));
 		pmd.getActions().get(x).getActionParams().add(new ActionParameter("applicationName","true","AllApplications","Associated servers with an application or process."));
-		
+		pmd.getActions().get(x).getActionParams().add(new ActionParameter("active","false","true","If 'true' the server will be brought online, if false, it is placed in an inactive state and will be recovered on the next refresh."));
+
+    	++x;
+    	pmd.getActions().add(new Action("serverInfo", "returns all the information about attached servers."));
+    	pmd.getActions().get(x).getActionParams().add(new ActionParameter("service","true","CruiseServer","Name of server instance"));
+		pmd.getActions().get(x).getActionParams().add(new ActionParameter("serverName","false","http://localhost","URL of CruiseServer"));
+		pmd.getActions().get(x).getActionParams().add(new ActionParameter("serverPort","false","8080","Port for server instances"));
+		pmd.getActions().get(x).getActionParams().add(new ActionParameter("applicationName","false","AllApplications","Associated servers with an application or process."));
 	}
 
 	public PlugInMetaData getPlugInMetaData() {
@@ -65,6 +68,10 @@ public class CruiseRouter implements PluginInterface{
 	}
 	public boolean executePlugin(SessionObject so, Services service)  {
 		boolean ret = false;
+		String server = null;
+		String sURL =  null;
+		String sPort =  null;
+		CruiseNode cn =  null;
 		String action = service.Action().trim().toLowerCase();
 		GenericSessionResp gro = new GenericSessionResp();
 		QUEUE_NAME = service.Parameter("QName");
@@ -79,18 +86,36 @@ public class CruiseRouter implements PluginInterface{
 			ret = true;
 			break;
 		case "addserver":
-			String server = service.Parameter("serverName");
-			String sURL = service.Parameter("serverURL");
-			String sPort = service.Parameter("serverPort");
-			CruiseNode cn = new CruiseNode(server, sURL, sPort);
+			server = service.Parameter("serverName");
+			sURL = service.Parameter("serverURL");
+			sPort = service.Parameter("serverPort");
+			String active = service.Parameter("active");
+			String plugins = service.Parameter("plugIns");
+			cn = new CruiseNode(server, sURL, sPort);
+			String plugInFo =  null;
+			PluginNames pin = null;
 			try {
-				String plugInFo = cn.init();
+				if(null == active || active.trim().length()<1 || active.equalsIgnoreCase("true")) {
+					plugInFo = cn.init();
+				}
 				if(null == plugInFo) {
+					if(null != plugins) {
+						pin = new PluginNames();
+						String[] p = plugins.split(":");
+						for(String pKey: p) {
+							pin.getPlugins().add(new Plugin(pKey));
+						}
+						cn.setPmda(pin);	
+					}
 					cn.setEnabled(false);
+					CruiseNodeList.addNode(server, cn);
+					gro.addParmeter("Server NOT Loaded", server+":"+sURL);
+					so.appendToResponse("addServer:"+server,gro);
+					ret = true;
 				}else {
 
 					ObjectMapper mapper = new ObjectMapper();
-					PluginNames pin = mapper.readValue(plugInFo, PluginNames.class);
+					pin = mapper.readValue(plugInFo, PluginNames.class);
 
 					for(Plugin p: pin.getPlugins()){
 						System.out.println(p.getPlugin());
@@ -115,6 +140,29 @@ public class CruiseRouter implements PluginInterface{
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				Clog.Error(so, "service", "0000003", server+" failed to load:"+e.getMessage());
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				Clog.Error(so, "service", "0000004", server+" failed to load:"+e.getMessage());
+			}
+			break;
+		case "serverinfo":
+			server = service.Parameter("serverName");
+			sURL = service.Parameter("serverURL");
+			sPort = service.Parameter("serverPort");
+			//CruiseNode cn = new CruiseNode(server, sURL, sPort);
+			try {
+				//String plugInFo = cn.init();
+				//if(null == plugInFo) {
+				//	cn.setEnabled(false);
+				//}else {
+
+					CruiseNodeList.getJSON(so);
+					ret = true;
+				//}
+				//if(null == connRecover) {
+				//	connRecover = new CruiseConnRecover();
+				//	connRecover.init();
+				//}
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				Clog.Error(so, "service", "0000004", server+" failed to load:"+e.getMessage());

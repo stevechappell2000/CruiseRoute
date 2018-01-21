@@ -4,14 +4,14 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.concurrent.atomic.AtomicInteger;
-
+import java.util.Set;
 import com.corecruise.cruise.SessionObject;
 import com.corecruise.cruise.services.utils.Services;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class CruiseNodeList {
+	//list of servers by supported plugins (string=list of plugins). The server hash contains the list of like functionality servers
 	private static HashMap<String, ServerHash> nodeList = new HashMap<String, ServerHash>();
 	private static ArrayList<String> servers = new ArrayList<String>();
 
@@ -25,7 +25,15 @@ public class CruiseNodeList {
 		servers.add(plugins);
 		servers.sort(null);
 	}
-	
+	public static void getJSON(SessionObject so) {
+		Set<String> keys = nodeList.keySet();
+		ArrayList<ArrayList<CruiseNode>> sh = new ArrayList<ArrayList<CruiseNode>>();
+		for(String key:keys) {
+			sh.add(nodeList.get(key).getServersArray());
+			//so.appendToResponse(key, );
+		}
+		so.appendToResponse("CruiseRouter", sh);
+	}
 	public static HashMap<String, ServerHash> getNodeList() {
 		return nodeList;
 	}
@@ -132,6 +140,7 @@ public class CruiseNodeList {
 					sessionObject.appendToResponse("CruiseRoute-"+cn.getName(), pin);
 					ok = true;
 					retry = retryCount;
+					cn.updateUsage(array);
 				} catch (MalformedURLException e) {
 					sessionObject.appendToResponse("CruiseRoute","("+retry+" of "+retryCount+" Attempts) Failed to call sever 100:"+cn.getServer()+":"+cn.getPort()+": "+e.getMessage());
 					//e.printStackTrace();
