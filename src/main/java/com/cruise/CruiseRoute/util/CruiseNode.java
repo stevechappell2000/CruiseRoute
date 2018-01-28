@@ -144,10 +144,13 @@ public class CruiseNode {
 		return plugins;
 	}
 	public ArrayList<plugInUsage> getPluginInfo(){
+		
 		ArrayList<plugInUsage> pi = new ArrayList<plugInUsage>();
-		int x = pmda.length;
-		for(int i=0;i<x;i++) {
-			pi.add(new plugInUsage(pmda[i],usage[i]));
+		if(null != pmda) {
+			int x = pmda.length;
+			for(int i=0;i<x;i++) {
+				pi.add(new plugInUsage(pmda[i],usage[i]));
+			}
 		}
 		return pi;
 	}
@@ -156,7 +159,11 @@ public class CruiseNode {
 	}
 	public String init() throws MalformedURLException, IOException{
 		String ret = null;
+		try {
 		ret = sendRequest(getInfo);
+		}catch(Exception e) {
+			System.out.println("Connection not established:"+e.getMessage());
+		}
 		return ret;
 	}
 	

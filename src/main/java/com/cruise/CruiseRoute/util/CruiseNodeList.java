@@ -23,6 +23,10 @@ public class CruiseNodeList {
 			nodeList.put(plugins, new ServerHash(serverName, inNode));
 		}
 		servers.add(plugins);
+		
+		//array = Arrays.stream(array).distinct().toArray(String[]::new);
+		//servers = servers.stream().distinct().collect(servers);
+		
 		servers.sort(null);
 	}
 	public static void getJSON(SessionObject so) {
@@ -59,7 +63,7 @@ public class CruiseNodeList {
 
 			for(int i=0;i<len;i++) {
 				cn = holdList.getNextServer();
-				if(cn.isEnabled()) {
+				if(cn != null && (cn.isEnabled())) {
 		            /**
 		             * retry is a problem here, if the server is disable we are still including it in the count. 
 		             * So this is bug that needs to be address - S.Chappell

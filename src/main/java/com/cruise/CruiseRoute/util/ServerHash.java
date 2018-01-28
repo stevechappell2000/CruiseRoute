@@ -54,8 +54,14 @@ public class ServerHash {
 	}
 	@JsonIgnore
 	public CruiseNode getNextServer() {
-	   String name = serverNames.get(ind.getAndAccumulate(serverNames.size(), (cur, n)->cur >= n-1 ? 0 : cur+1));
-	   return servers.get(name);
+	   CruiseNode cn = null;
+	   try {
+		   String name = serverNames.get(ind.getAndAccumulate(serverNames.size(), (cur, n)->cur >= n-1 ? 0 : cur+1));
+		   cn = servers.get(name);
+	   }catch(Exception e) {
+		   cn = null;
+	   }
+	   return cn;
 	} 
 	
 }

@@ -1,8 +1,10 @@
-com\cruise\CruiseRoute\util\CruiseNode.class
 com\cruise\CruiseRoute\util\PluginNames.class
+com\cruise\plugins\CruiseRoute\CruiseRouter.class
+com\cruise\CruiseRoute\util\ConfigServer.class
+com\cruise\CruiseRoute\util\Plugin.class
+com\cruise\CruiseRoute\util\CruiseNode.class
 com\cruise\CruiseRoute\util\ServerHash.class
 com\cruise\CruiseRoute\util\CruiseNodeList.class
 com\cruise\CruiseRoute\util\CruiseNode$plugInUsage.class
-com\cruise\plugins\CruiseRoute\CruiseRouter.class
-com\cruise\CruiseRoute\util\Plugin.class
+com\cruise\CruiseRoute\util\ConfigServerArray.class
 com\cruise\CruiseRoute\util\CruiseConnRecover.class
